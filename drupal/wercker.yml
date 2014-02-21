@@ -1,0 +1,36 @@
+box: audionerd/ubuntu12.04-ruby2.0.0-nodejs0.10@0.1.6
+# Build definition
+build:
+  # The steps that will be executed on build
+  steps:
+    # A step that executes `npm install` command
+    #- npm-install
+    - bundle-install
+    - bundle-package
+    - grunt
+
+  after-steps:
+    - hipchat-notify:
+        token: $HIPCHAT_TOKEN
+        room-id: $HIPCHAT_ROOM
+        passed-notify: true
+        failed-notify: true
+        on: always
+
+deploy:
+  steps:
+    - script:
+        name: write env var
+        code: |-
+          export CAP_PRIVATE_KEY=`mktemp`
+          echo -e $DEPLOY_KEY_PRIVATE > $CAP_PRIVATE_KEY
+    - cap:
+        stage: $DEPLOY_STAGE
+
+  after-steps:
+    - hipchat-notify:
+        token: $HIPCHAT_TOKEN
+        room-id: $HIPCHAT_ROOM
+        passed-notify: true
+        failed-notify: true
+        on: always
